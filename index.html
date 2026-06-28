@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IconKit • PWA Icon Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --accent: #6366f1;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+        }
+
+        .checkerboard {
+            background-image: 
+                linear-gradient(45deg, #27272a 25%, transparent 25%), 
+                linear-gradient(-45deg, #27272a 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #27272a 75%), 
+                linear-gradient(-45deg, transparent 75%, #27272a 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+
+        .icon-preview {
+            image-rendering: crisp-edges;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .icon-preview:hover {
+            transform: scale(1.03);
+        }
+
+        .section-card {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+        }
+
+        .nav-active {
+            background-color: #27272a;
+            color: white;
+            border-radius: 9999px;
+        }
+
+        .segmented-btn {
+            transition: all 0.1s ease;
+        }
+        
+        .segmented-btn.active {
+            background-color: white;
+            color: #18181b;
+            box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+        }
+
+        .preview-label {
+            font-size: 0.75rem;
+            letter-spacing: -.025em;
+        }
+
+        .toast {
+            animation: toast-pop 0.3s ease forwards;
+        }
+
+        .modern-shadow {
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200">
+    <!-- Header -->
+    <header class="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-lg sticky top-0 z-50">
+        <div class="max-w-screen-xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-2xl flex items-center justify-center shadow-inner">
+                    <i class="fa-solid fa-icons text-white text-2xl"></i>
+                </div>
+                <div>
+                    <span class="font-display text-3xl font-semibold tracking-tighter">IconKit</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-x-2 text-sm">
+                <div class="px-3 py-1.5 bg-zinc-900 rounded-2xl border border-zinc-800 text-zinc-400 flex items-center gap-x-2">
+                    <i class="fa-solid fa-globe fa-sm"></i>
+                    <span class="font-medium">PWA + Android + iOS ready</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-screen-xl mx-auto px-6 pt-8 pb-16">
+        
+        <!-- Hero / Title -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center gap-x-2 px-4 py-1 rounded-3xl bg-zinc-900 border border-zinc-800 mb-4">
+                <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span class="text-emerald-400 text-sm font-medium">Free • No upload • Works offline</span>
+            </div>
+            <h1 class="font-display text-6xl tracking-tighter font-semibold">Beautiful icons.<br>Perfect sizes.</h1>
+            <p class="mt-3 text-xl text-zinc-400 max-w-md mx-auto">Generate production-ready 192×192, 512×512 and maskable icons from any image.</p>
+        </div>
+
+        <!-- Upload Zone -->
+        <div id="upload-zone" 
+             class="max-w-2xl mx-auto border-2 border-dashed border-zinc-700 hover:border-indigo-500/70 transition-colors rounded-3xl p-12 text-center cursor-pointer bg-zinc-900/50">
+            <div class="mx-auto w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center mb-6">
+                <i class="fa-solid fa-cloud-upload-alt text-4xl text-zinc-400"></i>
+            </div>
+            <h3 class="text-2xl font-semibold tracking-tight">Drop your image here</h3>
+            <p class="text-zinc-400 mt-2">PNG, JPG, WEBP or GIF • Best results with square images</p>
+            
+            <div class="mt-6">
+                <label class="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-zinc-100 transition-colors text-zinc-900 font-semibold rounded-2xl cursor-pointer text-sm shadow-sm">
+                    <i class="fa-solid fa-folder-open mr-2"></i>
+                    <span>Browse files</span>
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                </label>
+            </div>
+            <p class="text-[10px] text-zinc-500 mt-4">Your image never leaves your browser</p>
+        </div>
+
+        <!-- Main Editor (hidden until image uploaded) -->
+        <div id="editor" class="hidden max-w-screen-xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-x-4">
+                    <div id="original-info" 
+                         class="flex items-center gap-x-3 bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-2 text-sm">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button onclick="changeImage()" 
+                            class="flex items-center gap-x-2 px-4 py-2 text-sm font-medium bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 transition-colors rounded-2xl">
+                        <i class="fa-solid fa-sync fa-sm"></i>
+                        <span>Change image</span>
+                    </button>
+                </div>
+                
+                <button onclick="downloadAll()" 
+                        class="flex items-center gap-x-2.5 px-5 py-2.5 bg-white hover:bg-zinc-100 active:bg-zinc-200 transition-all text-zinc-900 font-semibold rounded-2xl text-sm shadow-sm">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Download all (ZIP)</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Controls -->
+                <div class="lg:col-span-4 section-card rounded-3xl p-6 modern-shadow">
+                    <div class="mb-6">
+                        <div class="flex items-center gap-x-2 mb-3">
+                            <i class="fa-solid fa-sliders-h text-indigo-400"></i>
+                            <span class="font-semibold tracking-tight">Generation Settings</span>
+                        </div>
+                    </div>
+
+                    <!-- Fit Mode -->
+                    <div class="mb-6">
+                        <div class="text-xs font-medium tracking-wider text-zinc-400 mb-2 px-1">FIT MODE</div>
+                        <div class="flex bg-zinc-800 rounded-2xl p-1 border border-zinc-700">
+                            <button onclick="setFitMode('contain')" id="btn-contain"
+                                    class="segmented-btn flex-1 py-2 text-sm font-medium rounded-[14px] active">Contain</button>
+                            <button onclick="setFitMode('cover')" id="btn-cover"
+                                    class="segmented-btn flex-1 py-2 text-sm font-medium rounded-[14px]">Cover</button>
+                        </div>
+                        <div class="text-[10px] text-zinc-500 mt-1.5 px-1">Contain = full image visible • Cover = fills square</div>
+                    </div>
+
+                    <!-- Background -->
+                    <div class="mb-6">
+                        <div class="text-xs font-medium tracking-wider text-zinc-400 mb-2 px-1">BACKGROUND</div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1">
+                                <input type="color" id="bg-color" value="#18181b" 
+                                       class="w-full h-11 rounded-2xl border border-zinc-700 cursor-pointer overflow-hidden p-1 bg-zinc-900">
+                            </div>
+                            
+                            <label class="flex items-center gap-x-2 text-sm cursor-pointer select-none">
+                                <input type="checkbox" id="transparent-bg" checked 
+                                       class="w-4 h-4 accent-indigo-500 rounded">
+                                <span class="font-medium">Transparent</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Maskable Safe Margin -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2 px-1">
+                            <div>
+                                <div class="text-xs font-medium tracking-wider text-zinc-400">MASKABLE SAFE MARGIN</div>
+                            </div>
+                            <div class="font-mono text-sm font-semibold text-indigo-400" id="padding-value">10%</div>
+                        </div>
+                        
+                        <input type="range" id="maskable-padding" 
+                               class="w-full accent-indigo-500" 
+                               min="0" max="30" step="1" value="10">
+                        
+                        <div class="flex justify-between text-[10px] text-zinc-500 mt-1 px-1">
+                            <div>0% (tight)</div>
+                            <div class="text-center">Recommended<br>10–20%</div>
+                            <div>30% (very safe)</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-zinc-700 text-xs text-zinc-400">
+                        <i class="fa-solid fa-info-circle mr-1.5"></i>
+                        Maskable icons let Android apply its own shape. Keep important parts in the center.
+                    </div>
+                </div>
+
+                <!-- Previews -->
+                <div class="lg:col-span-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        
+                        <!-- 192x192 -->
+                        <div class="section-card rounded-3xl p-5 flex flex-col">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <div class="font-semibold tracking-tight">192×192</div>
+                                    <div class="text-xs text-emerald-400 font-medium">STANDARD</div>
+                                </div>
+                                <button onclick="downloadIcon(192)" 
+                                        class="download-btn flex items-center gap-x-2 px-3.5 py-1.5 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 transition-colors rounded-2xl border border-zinc-700">
+                                    <i class="fa-solid fa-download fa-sm"></i>
+                                    <span>PNG</span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1 flex items-center justify-center bg-zinc-950 rounded-2xl p-4 checkerboard border border-zinc-800">
+                                <canvas id="canvas-192" width="192" height="192" 
+                                        class="icon-preview max-w-[148px] max-h-[148px] rounded-xl border border-zinc-700"></canvas>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <span class="text-[10px] px-2.5 py-0.5 bg-emerald-950 text-emerald-400 rounded-full font-mono tracking-wider">icon-192.png</span>
+                            </div>
+                        </div>
+
+                        <!-- 512x512 -->
+                        <div class="section-card rounded-3xl p-5 flex flex-col">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <div class="font-semibold tracking-tight">512×512</div>
+                                    <div class="text-xs text-emerald-400 font-medium">STANDARD</div>
+                                </div>
+                                <button onclick="downloadIcon(512)" 
+                                        class="download-btn flex items-center gap-x-2 px-3.5 py-1.5 text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 transition-colors rounded-2xl border border-zinc-700">
+                                    <i class="fa-solid fa-download fa-sm"></i>
+                                    <span>PNG</span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1 flex items-center justify-center bg-zinc-950 rounded-2xl p-4 checkerboard border border-zinc-800">
+                                <canvas id="canvas-512" width="512" height="512" 
+                                        class="icon-preview max-w-[148px] max-h-[148px] rounded-xl border border-zinc-700"></canvas>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <span class="text-[10px] px-2.5 py-0.5 bg-emerald-950 text-emerald-400 rounded-full font-mono tracking-wider">icon-512.png</span>
+                            </div>
+                        </div>
+
+                        <!-- 512x512 Maskable -->
+                        <div class="section-card rounded-3xl p-5 flex flex-col border border-indigo-500/30">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <div class="font-semibold tracking-tight">512×512</div>
+                                    <div class="text-xs text-violet-400 font-medium">MASKABLE</div>
+                                </div>
+                                <button onclick="downloadIcon('maskable')" 
+                                        class="download-btn flex items-center gap-x-2 px-3.5 py-1.5 text-xs font-semibold bg-violet-600 hover:bg-violet-500 active:bg-violet-400 transition-colors text-white rounded-2xl">
+                                    <i class="fa-solid fa-download fa-sm"></i>
+                                    <span>PNG</span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1 flex items-center justify-center bg-zinc-950 rounded-2xl p-4 checkerboard border border-zinc-800 relative">
+                                <canvas id="canvas-maskable" width="512" height="512" 
+                                        class="icon-preview max-w-[148px] max-h-[148px] rounded-xl border border-zinc-700"></canvas>
+                                
+                                <!-- Mask hint overlay -->
+                                <div class="absolute bottom-3 right-3 px-2 py-0.5 bg-black/70 text-[9px] rounded font-mono tracking-wider border border-white/10 text-white/70">MASK SAFE</div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <span class="text-[10px] px-2.5 py-0.5 bg-violet-950 text-violet-400 rounded-full font-mono tracking-wider">icon-maskable-512.png</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manifest snippet -->
+            <div class="mt-8 section-card rounded-3xl p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="font-semibold flex items-center gap-x-2">
+                        <i class="fa-solid fa-code text-zinc-400"></i>
+                        <span>manifest.json snippet</span>
+                    </div>
+                    <button onclick="copyManifest()" 
+                            class="text-xs flex items-center gap-x-1.5 px-3 py-1 rounded-2xl bg-zinc-800 hover:bg-zinc-700 transition-colors border border-zinc-700">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="text-xs bg-zinc-900 p-4 rounded-2xl overflow-x-auto font-mono text-emerald-300 border border-zinc-800"><code>{
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-800 border border-zinc-700 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-x-3 text-sm">
+        <i class="fa-solid fa-check-circle text-emerald-400"></i>
+        <span id="toast-text">Downloaded successfully!</span>
+    </div>
+
+    <script>
+        // Tailwind script
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent', '#6366f1');
+        }
+
+        let originalImage = null;
+        let currentFitMode = 'contain';
+        let currentOptions = {
+            fitMode: 'contain',
+            transparentBg: true,
+            bgColor: '#18181b',
+            maskablePadding: 0.10
+        };
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const text = document.getElementById('toast-text');
+            text.textContent = message;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex', 'toast');
+            
+            setTimeout(() => {
+                toast.classList.remove('flex', 'toast');
+                toast.classList.add('hidden');
+            }, 2200);
+        }
+
+        function setFitMode(mode) {
+            currentOptions.fitMode = mode;
+            currentFitMode = mode;
+            
+            // Update buttons
+            document.getElementById('btn-contain').classList.toggle('active', mode === 'contain');
+            document.getElementById('btn-cover').classList.toggle('active', mode === 'cover');
+            
+            if (originalImage) {
+                updateAllPreviews();
+            }
+        }
+
+        function updatePaddingValue() {
+            const slider = document.getElementById('maskable-padding');
+            const valueEl = document.getElementById('padding-value');
+            const percent = parseInt(slider.value);
+            valueEl.textContent = percent + '%';
+            currentOptions.maskablePadding = percent / 100;
+            
+            if (originalImage) {
+                updateAllPreviews();
+            }
+        }
+
+        function setupControls() {
+            // Fit mode buttons
+            const btnContain = document.getElementById('btn-contain');
+            const btnCover = document.getElementById('btn-cover');
+            
+            btnContain.onclick = () => setFitMode('contain');
+            btnCover.onclick = () => setFitMode('cover');
+            
+            // Set initial active
+            btnContain.classList.add('active', 'bg-white', 'text-zinc-900');
+            btnCover.classList.add('text-zinc-300');
+
+            // Background color
+            const colorInput = document.getElementById('bg-color');
+            colorInput.oninput = () => {
+                currentOptions.bgColor = colorInput.value;
+                if (!currentOptions.transparentBg && originalImage) {
+                    updateAllPreviews();
+                }
+            };
+
+            // Transparent checkbox
+            const transparentCheck = document.getElementById('transparent-bg');
+            transparentCheck.onchange = () => {
+                currentOptions.transparentBg = transparentCheck.checked;
+                if (originalImage) {
+                    updateAllPreviews();
+                }
+            };
+
+            // Maskable padding slider
+            const paddingSlider = document.getElementById('maskable-padding');
+            paddingSlider.oninput = updatePaddingValue;
+            
+            // Initial value
+            document.getElementById('padding-value').textContent = '10%';
+        }
+
+        function drawIconToCanvas(canvas, img, padding = 0) {
+            const size = canvas.width;
+            const ctx = canvas.getContext('2d', { alpha: true });
+            
+            ctx.clearRect(0, 0, size, size);
+            
+            // Background
+            if (!currentOptions.transparentBg) {
+                ctx.fillStyle = currentOptions.bgColor;
+                ctx.fillRect(0, 0, size, size);
+            }
+            
+            // Calculate drawing rectangle with padding (for maskable)
+            const effectiveSize = size * (1 - padding * 2);
+            const offset = size * padding;
+            
+            const imgW = img.width;
+            const imgH = img.height;
+            const imgAspect = imgW / imgH;
+            
+            let drawW, drawH, drawX, drawY;
+            
+            if (currentOptions.fitMode === 'cover') {
+                // Cover the effective area (may crop)
+                if (imgAspect > 1) {
+                    drawH = effectiveSize;
+                    drawW = drawH * imgAspect;
+                } else {
+                    drawW = effectiveSize;
+                    drawH = drawW / imgAspect;
+                }
+                drawX = offset + (effectiveSize - drawW) / 2;
+                drawY = offset + (effectiveSize - drawH) / 2;
+            } else {
+                // Contain (letterbox / show full image)
+                if (imgAspect > 1) {
+                    drawW = effectiveSize;
+                    drawH = drawW / imgAspect;
+                } else {
+                    drawH = effectiveSize;
+                    drawW = drawH * imgAspect;
+                }
+                drawX = offset + (effectiveSize - drawW) / 2;
+                drawY = offset + (effectiveSize - drawH) / 2;
+            }
+            
+            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+        }
+
+        function updateAllPreviews() {
+            if (!originalImage) return;
+            
+            const canvas192 = document.getElementById('canvas-192');
+            const canvas512 = document.getElementById('canvas-512');
+            const canvasMask = document.getElementById('canvas-maskable');
+            
+            drawIconToCanvas(canvas192, originalImage, 0);
+            drawIconToCanvas(canvas512, originalImage, 0);
+            drawIconToCanvas(canvasMask, originalImage, currentOptions.maskablePadding);
+        }
+
+        function handleImageUpload(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Please upload a valid image file.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    
+                    // Hide upload, show editor
+                    document.getElementById('upload-zone').classList.add('hidden');
+                    document.getElementById('editor').classList.remove('hidden');
+                    
+                    // Show original info
+                    const infoDiv = document.getElementById('original-info');
+                    infoDiv.innerHTML = `
+                        <div class="flex items-center gap-x-3">
+                            <img src="${e.target.result}" class="w-9 h-9 object-cover rounded-xl border border-zinc-700" style="image-rendering: crisp-edges;">
+                            <div class="leading-tight">
+                                <div class="font-medium text-sm">${file.name}</div>
+                                <div class="text-xs text-zinc-400 font-mono">\( {img.width}× \){img.height}px</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Initial draw
+                    updateAllPreviews();
+                    
+                    // Show success toast
+                    setTimeout(() => {
+                        showToast('Image loaded successfully!');
+                    }, 300);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function changeImage() {
+            // Reset to upload state
+            document.getElementById('editor').classList.add('hidden');
+            document.getElementById('upload-zone').classList.remove('hidden');
+            originalImage = null;
+            
+            // Clear canvases
+            ['canvas-192', 'canvas-512', 'canvas-maskable'].forEach(id => {
+                const c = document.getElementById(id);
+                const ctx = c.getContext('2d');
+                ctx.clearRect(0, 0, c.width, c.height);
+            });
+        }
+
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function downloadIcon(sizeOrType) {
+            if (!originalImage) return;
+            
+            let canvas, filename;
+            
+            if (sizeOrType === 192) {
+                canvas = document.getElementById('canvas-192');
+                filename = 'icon-192.png';
+            } else if (sizeOrType === 512) {
+                canvas = document.getElementById('canvas-512');
+                filename = 'icon-512.png';
+            } else if (sizeOrType === 'maskable') {
+                canvas = document.getElementById('canvas-maskable');
+                filename = 'icon-maskable-512.png';
+            }
+            
+            if (canvas) {
+                downloadCanvas(canvas, filename);
+                showToast(`Downloaded ${filename}`);
+            }
+        }
+
+        async function downloadAll() {
+            if (!originalImage) return;
+            
+            // We need JSZip for proper zip. Since this is a single file tool, we'll use a lightweight approach:
+            // Download individually with small delays (most browsers allow multiple downloads)
+            const files = [
+                { canvas: document.getElementById('canvas-192'), name: 'icon-192.png' },
+                { canvas: document.getElementById('canvas-512'), name: 'icon-512.png' },
+                { canvas: document.getElementById('canvas-maskable'), name: 'icon-maskable-512.png' }
+            ];
+            
+            for (let i = 0; i < files.length; i++) {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.download = files[i].name;
+                    link.href = files[i].canvas.toDataURL('image/png');
+                    link.click();
+                }, i * 280);
+            }
+            
+            showToast('Downloading all icons...');
+        }
+
+        function copyManifest() {
+            const manifestCode = `{
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}`;
+            
+            navigator.clipboard.writeText(manifestCode).then(() => {
+                const originalText = event.currentTarget ? event.currentTarget.innerHTML : '';
+                showToast('Manifest snippet copied to clipboard!');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = manifestCode;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('Manifest snippet copied!');
+            });
+        }
+
+        function setupUpload() {
+            const uploadZone = document.getElementById('upload-zone');
+            const fileInput = document.getElementById('file-input');
+            
+            // Click to upload
+            uploadZone.addEventListener('click', () => fileInput.click());
+            
+            // Drag and drop
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('border-indigo-500', 'bg-zinc-900');
+            });
+            
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('border-indigo-500', 'bg-zinc-900');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('border-indigo-500', 'bg-zinc-900');
+                const file = e.dataTransfer.files[0];
+                handleImageUpload(file);
+            });
+            
+            // File input
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+            
+            // Keyboard support
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '/' && document.activeElement.tagName === 'BODY') {
+                    e.preventDefault();
+                    fileInput.click();
+                }
+            });
+        }
+
+        function initializeDefaultState() {
+            // Set initial segmented button styles
+            const btnContain = document.getElementById('btn-contain');
+            if (btnContain) {
+                btnContain.classList.add('bg-white', 'text-zinc-900', 'shadow-sm');
+            }
+            
+            // Initial padding value display
+            const slider = document.getElementById('maskable-padding');
+            if (slider) {
+                slider.addEventListener('input', () => {
+                    document.getElementById('padding-value').textContent = slider.value + '%';
+                });
+            }
+            
+            // Make sure controls are wired
+            setupControls();
+        }
+
+        // Boot everything
+        function init() {
+            initializeTailwind();
+            setupUpload();
+            initializeDefaultState();
+            
+            // Bonus: Allow pressing "u" to trigger upload when editor is visible
+            document.addEventListener('keypress', function(e) {
+                if (e.key.toLowerCase() === 'u' && !document.getElementById('editor').classList.contains('hidden')) {
+                    document.getElementById('file-input').click();
+                }
+            });
+            
+            // Easter egg / tip
+            console.log('%c[IconKit] Tip: Press "u" while in the editor to quickly upload a new image.', 'color:#3f3f46');
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
