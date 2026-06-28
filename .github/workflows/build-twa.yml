@@ -1,4 +1,4 @@
-name: Build TWA APK/AAB from PWA (Self-hosted)
+name: Build TWA APK/AAB from PWA
 
 on:
   workflow_dispatch:
@@ -6,7 +6,6 @@ on:
       manifest_url:
         description: 'Full HTTPS URL to your PWA manifest.json'
         required: true
-        default: 'https://your-pwa.netlify.app/manifest.json'
 
 jobs:
   build:
@@ -16,10 +15,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -33,23 +32,24 @@ jobs:
       - name: Create build folder
         run: mkdir -p twa-build
 
-      - name: Initialize TWA from your PWA
+      - name: Initialize TWA (strict mode)
         run: |
+          set -e
           bubblewrap init \
             --manifest "${{ github.event.inputs.manifest_url }}" \
-            --directory ./twa-build \
-            --skipPwaValidation || true
+            --directory ./twa-build
 
-      - name: Build signed AAB + APK
+      - name: Build AAB + APK
         run: |
+          set -e
           cd twa-build
-          bubblewrap build --universalApk || true
+          bubblewrap build --universalApk
 
-      - name: Upload APK and AAB
+      - name: Upload files
         uses: actions/upload-artifact@v4
         with:
           name: TWA-Build-Output
           path: |
             twa-build/app-release-bundle.aab
             twa-build/app-release-signed.apk
-          retention-days: 7
+          retention-days: 30
