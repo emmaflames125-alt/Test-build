@@ -1,0 +1,55 @@
+name: Build TWA APK/AAB from PWA
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest_url:
+        description: 'Full HTTPS URL to your PWA manifest.json'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Create build folder
+        run: mkdir -p twa-build
+
+      - name: Initialize TWA (strict mode)
+        run: |
+          set -e
+          bubblewrap init \
+            --manifest "${{ github.event.inputs.manifest_url }}" \
+            --directory ./twa-build
+
+      - name: Build AAB + APK
+        run: |
+          set -e
+          cd twa-build
+          bubblewrap build --universalApk
+
+      - name: Upload files
+        uses: actions/upload-artifact@v4
+        with:
+          name: TWA-Build-Output
+          path: |
+            twa-build/app-release-bundle.aab
+            twa-build/app-release-signed.apk
+          retention-days: 30
